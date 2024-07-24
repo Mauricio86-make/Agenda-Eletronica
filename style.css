@@ -1,0 +1,94 @@
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+            background-color: orange;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgb(226, 220, 209);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 50px;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #8B4513;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #6B3A15;
+        }
+        .error {
+            color: black;
+            margin-bottom: 10px;
+        }
+        #listaHorarios, #listaClientes {
+            color: black; /* Define a cor do texto como preto */
+        }
+        
+        #listaHorarios {
+            color: black;
+        }
+        #saveClientButton {
+            background-color: rgb(16, 136, 136);
+            
+        }
+        /* Estilo geral */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Esconde a seção de clientes agendados em telas pequenas */
+#clientesAgendados {
+    display: block; /* Padrão para telas maiores */
+}
+
+/* Media query para telas menores (dispositivos móveis) */
+@media (max-width: 768px) {
+    #clientesAgendados {
+        display: none; /* Esconde em telas pequenas */
+    }
+    
+    body {
+        font-size: 16px; /* Ajuste o tamanho da fonte para melhor legibilidade em dispositivos móveis */
+    }
+
+    /* Ajustes de layout para dispositivos móveis */
+    .container {
+        padding: 10px;
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+    }
+
+    label, input, select, button {
+        margin-bottom: 10px;
+    }
+}
