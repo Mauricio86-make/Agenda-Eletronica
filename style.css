@@ -33,13 +33,13 @@
             box-sizing: border-box;
         }
         button {
-            background-color: #8B4513;
+            background-color: rgb(16, 136, 136);
             color: white;
             border: none;
             cursor: pointer;
         }
         button:hover {
-            background-color: #6B3A15;
+            background-color: rgb(16, 136, 136);
         }
         .error {
             color: black;
@@ -66,6 +66,9 @@
 /* Esconde a seção de clientes agendados em telas pequenas */
 #clientesAgendados {
     display: block; /* Padrão para telas maiores */
+}
+#selectedDateDisplay {
+    text-align: center;
 }
 
 /* Media query para telas menores (dispositivos móveis) */

@@ -1,4 +1,5 @@
 
+
 const agendamentos = {};
 
 document.getElementById('bookingForm').addEventListener('submit', async function (event) {
@@ -42,12 +43,47 @@ document.getElementById('bookingForm').addEventListener('submit', async function
     atualizarHorariosDisponiveis(date);
     atualizarClientesAgendados(date);
 });
+ document.getElementById('date').addEventListener('change', updateDateDisplay);
+        document.getElementById('prevDay').addEventListener('click', function () {
+            changeDateBy(-1);
+        });
+        document.getElementById('nextDay').addEventListener('click', function () {
+            changeDateBy(1);
+        });
 
-document.getElementById('date').addEventListener('change', function () {
-    const date = this.value;
-    atualizarHorariosDisponiveis(date);
-    atualizarClientesAgendados(date);
-});
+        function updateDateDisplay() {
+            const dateInput = document.getElementById('date');
+            const date = new Date(dateInput.value);
+            const day = date.getDate();
+            const monthNames = [
+                'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+                'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+            ];
+            const monthName = monthNames[date.getMonth()];
+
+            const formattedDate = `${day} de ${monthName}`;
+            document.getElementById('selectedDateDisplay').textContent = formattedDate;
+            atualizarHorariosDisponiveis(formattedDate);
+            atualizarClientesAgendados(formattedDate);
+        }
+
+        function changeDateBy(days) {
+            const dateInput = document.getElementById('date');
+            const date = new Date(dateInput.value);
+            date.setDate(date.getDate() + days);
+            dateInput.value = date.toISOString().split('T')[0];
+            updateDateDisplay();
+        }
+
+        function atualizarHorariosDisponiveis(fecha) {
+            // Lógica para actualizar los horarios disponibles
+            console.log(`Actualizando horarios disponibles para ${fecha}`);
+        }
+
+        function atualizarClientesAgendados(fecha) {
+            // Lógica para actualizar los clientes agendados
+            console.log(`Actualizando clientes agendados para ${fecha}`);
+        }
 
 function atualizarHorariosDisponiveis(date) {
     const listaHorarios = document.getElementById('listaHorarios');
@@ -67,7 +103,10 @@ function atualizarHorariosDisponiveis(date) {
         { start: '13:00', end: '14:00' },
         { start: '14:00', end: '15:00' },
         { start: '15:00', end: '16:00' },
-        { start: '16:00', end: '17:00' }
+        { start: '16:00', end: '17:00' },
+        { start: '17:00', end: '18:00' },
+        { start: '18:00', end: '19:00' },
+        { start: '19:00', end: '20:00' }
     ];
 
     todosHorarios.forEach(horario => {
@@ -84,6 +123,7 @@ function atualizarHorariosDisponiveis(date) {
         listaHorarios.appendChild(listItem);
     });
 }
+
 
 function atualizarClientesAgendados(date) {
     const listaClientes = document.getElementById('listaClientes');
@@ -104,6 +144,7 @@ function addMinutes(time, minutes) {
     const newMinute = newMinutes % 60;
     return `${newHour.toString().padStart(2, '0')}:${newMinute.toString().padStart(2, '0')}`;
 }
+
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('bookingForm');
     const saveClientButton = document.getElementById('saveClientButton');
@@ -151,3 +192,4 @@ document.addEventListener('DOMContentLoaded', function () {
 async function enviarMensagemWhatsApp(phone, name, date, time, service) {
     // Aquí debes implementar la lógica para enviar el mensaje de WhatsApp
 }
+
