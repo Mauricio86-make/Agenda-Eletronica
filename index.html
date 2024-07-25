@@ -147,7 +147,7 @@
             const clientesDoDia = agendamentos[date] || [];
             clientesDoDia.forEach((agendamento, index) => {
                 const listItem = document.createElement('li');
-                listItem.textContent = `Nome: ${agendamento.name}, Email: ${agendamento.email}, Serviço: ${agendamento.service}, Horário: ${agendamento.time}`;
+                listItem.textContent = `Nome: ${agendamento.name}, Serviço: ${agendamento.service}, Horário: ${agendamento.time}`;
 
                 const desmarcarButton = document.createElement('button');
                 desmarcarButton.textContent = 'Desmarcar';
