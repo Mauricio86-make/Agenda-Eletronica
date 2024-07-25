@@ -76,7 +76,10 @@
     #clientesAgendados {
         display: none; /* Esconde em telas pequenas */
     }
-    
+    button {
+        font-size: 18px;
+        padding: 10px 20px;
+    }
     body {
         font-size: 16px; /* Ajuste o tamanho da fonte para melhor legibilidade em dispositivos móveis */
     }
@@ -95,3 +98,4 @@
         margin-bottom: 10px;
     }
 }
+
