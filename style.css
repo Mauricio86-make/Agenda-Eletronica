@@ -73,9 +73,9 @@
 
 /* Media query para telas menores (dispositivos móveis) */
 @media (max-width: 768px) {
-    #clientesAgendados {
-        display: none; /* Esconde em telas pequenas */
-    }
+   /* #clientesAgendados {
+        display: none; Esconde em telas pequenas
+    }*/
     button {
         font-size: 18px;
         padding: 10px 20px;
