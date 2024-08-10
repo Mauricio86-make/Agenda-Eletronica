@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -7,10 +8,135 @@
     <link rel="stylesheet" href="./style.css">
     <title>Agendamento de Horários</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-image: url(https://img.elo7.com.br/product/zoom/49E6CFE/adesivo-parede-boho-cilios-alongamento-estetica-painel-c103-quarto.jpg);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            box-sizing: border-box;
+        }
+
+        h1, h2 {
+            color: #4A90E2;
+            text-align: center;
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: 400;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+            color: #666;
+            display: block;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        input::placeholder {
+            color: rgba(102, 102, 102, 0.6);
+            font-style: italic;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background-color: #4A90E2;
+            color: #fff;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #357ABD;
+        }
+
+        .error {
+            color: red;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul li {
+            padding: 10px;
+            margin-bottom: 5px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #horariosDisponiveis ul li {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #listaClientes button,
+        #listaClientes .editButton {
+            background-color: #FF6347;
+            border: none;
+            padding: 5px 10px;
+            color: #fff;
+            font-size: 0.8rem;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-left: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        #listaClientes button:hover,
+        #listaClientes .editButton:hover {
+            background-color: #FF4500;
+        }
+
+        /* Esconder a seção de adicionar cliente */
+        #clientFormSection {
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        #saveClientButton {
+            display: none;
+        }
+    </style>
 </head>
 
 <body>
-
     <div class="container">
         <h1>Agendamento de Serviços</h1>
         <form id="bookingForm">
@@ -21,8 +147,11 @@
             <input type="email" id="email" name="email" placeholder="Digite o email">
 
             <label for="phone">Telefone (WhatsApp):</label>
-            <input type="tel" id="phone" name="phone" placeholder="Digite o numero de Telefone" required>
-            <button type="button" id="saveClientButton">Salvar Cliente</button>
+            <input type="tel" id="phone" name="phone" placeholder="Digite o número de Telefone" required>
+
+            <div id="clientFormSection">
+                <button type="button" id="saveClientButton">Salvar Cliente</button>
+            </div>
 
             <label for="service">Serviço:</label>
             <select id="service" name="service" required>
@@ -45,196 +174,218 @@
 
             <div id="errorMessage" class="error"></div>
             <button type="submit">Agendar</button>
-
         </form>
+
         <div id="horariosDisponiveis">
             <h2>Horários Disponíveis e Ocupados</h2>
-            <p id="selectedDateDisplay">Seleccione una fecha</p>
+            <p id="selectedDateDisplay">Selecione uma data</p>
             <ul id="listaHorarios"></ul>
         </div>
+
         <div id="clientesAgendados">
             <h2>Clientes Agendados</h2>
             <ul id="listaClientes"></ul>
         </div>
     </div>
+
+    <script>
+        const agendamentos = {};
+
+        document.getElementById('bookingForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const service = document.getElementById('service').value;
+            const duration = parseInt(document.getElementById('duration').value, 10);
+            const date = document.getElementById('date').value;
+            const time = document.getElementById('time').value;
+
+            const [startHour, startMinute] = time.split(':').map(Number);
+            const startTimeInMinutes = startHour * 60 + startMinute;
+            const endTimeInMinutes = startTimeInMinutes + duration;
+
+            if (!agendamentos[date]) {
+                agendamentos[date] = [];
+            }
+
+            const isConflict = agendamentos[date].some(agendamento => {
+                const [bookedStartHour, bookedStartMinute] = agendamento.time.split(':').map(Number);
+                const bookedStartTimeInMinutes = bookedStartHour * 60 + bookedStartMinute;
+                const bookedEndTimeInMinutes = bookedStartTimeInMinutes + parseInt(agendamento.duration, 10);
+
+                return (startTimeInMinutes < bookedEndTimeInMinutes && endTimeInMinutes > bookedStartTimeInMinutes);
+            });
+
+            if (isConflict) {
+                document.getElementById('errorMessage').textContent = 'Horário já está agendado. Escolha outro horário.';
+                return;
+            }
+
+            agendamentos[date].push({ name, email, phone, service, time, duration });
+            document.getElementById('errorMessage').textContent = '';
+
+            atualizarHorariosDisponiveis(date);
+            atualizarClientesAgendados(date);
+        });
+
+        function atualizarHorariosDisponiveis(date) {
+            const listaHorarios = document.getElementById('listaHorarios');
+            listaHorarios.innerHTML = '';
+
+            const horariosDoDia = agendamentos[date]?.map(agendamento => ({
+                start: agendamento.time,
+                end: addMinutes(agendamento.time, agendamento.duration),
+                name: agendamento.name
+            })) || [];
+
+            const todosHorarios = [
+                { start: '08:00', end: '09:00' },
+                { start: '09:00', end: '10:00' },
+                { start: '10:00', end: '11:00' },
+                { start: '11:00', end: '12:00' },
+                { start: '13:00', end: '14:00' },
+                { start: '14:00', end: '15:00' },
+                { start: '15:00', end: '16:00' },
+                { start: '16:00', end: '17:00' },
+                { start: '17:00', end: '18:00' },
+                { start: '18:00', end: '19:00' },
+                { start: '19:00', end: '20:00' }
+            ];
+
+            todosHorarios.forEach(horario => {
+                const agendado = horariosDoDia.find(h => (h.start < horario.end && h.end > horario.start));
+                const listItem = document.createElement('li');
+
+                if (agendado) {
+                    listItem.textContent = `Ocupado: ${agendado.start} - ${agendado.end} (Cliente: ${agendado.name})`;
+                    listItem.style.color = 'red';
+                } else {
+                    listItem.textContent = `Disponível: ${horario.start} - ${horario.end}`;
+                    listItem.style.color = 'green';
+                }
+                listaHorarios.appendChild(listItem);
+            });
+        }
+
+        function atualizarClientesAgendados(date) {
+            const listaClientes = document.getElementById('listaClientes');
+            listaClientes.innerHTML = '';
+
+            const clientesDoDia = agendamentos[date] || [];
+            clientesDoDia.forEach((agendamento, index) => {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `Nome: ${agendamento.name}, Horário: ${agendamento.time}, Duração: ${agendamento.duration} minutos`;
+
+                // Botão de editar
+                const editarButton = document.createElement('button');
+                editarButton.textContent = 'Editar';
+                editarButton.className = 'editButton';
+                editarButton.onclick = function () {
+                    editarAgendamento(date, index);
+                };
+
+                // Botão de desmarcar
+                const desmarcarButton = document.createElement('button');
+                desmarcarButton.textContent = 'Desmarcar';
+                desmarcarButton.onclick = function () {
+                    removerAgendamento(date, index);
+                };
+
+                listItem.appendChild(editarButton);
+                listItem.appendChild(desmarcarButton);
+                listaClientes.appendChild(listItem);
+            });
+        }
+
+        function addMinutes(time, minutes) {
+            const [hour, minute] = time.split(':').map(Number);
+            const newMinutes = hour * 60 + minute + parseInt(minutes, 10);
+            const newHour = Math.floor(newMinutes / 60);
+            const newMinute = newMinutes % 60;
+            return `${newHour.toString().padStart(2, '0')}:${newMinute.toString().padStart(2, '0')}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('bookingForm');
+            const saveClientButton = document.getElementById('saveClientButton');
+            const nameInput = document.getElementById('name');
+            const emailInput = document.getElementById('email');
+            const phoneInput = document.getElementById('phone');
+            const dateInput = document.getElementById('date');
+            const selectedDateDisplay = document.getElementById('selectedDateDisplay');
+
+            const clients = JSON.parse(localStorage.getItem('clients')) || {};
+
+            nameInput.addEventListener('focus', function () {
+                document.getElementById('clientFormSection').style.display = 'block';
+            });
+
+            saveClientButton.addEventListener('click', function () {
+                const name = nameInput.value;
+                const email = emailInput.value;
+                const phone = phoneInput.value;
+
+                if (name && email && phone) {
+                    clients[name] = { email, phone };
+                    localStorage.setItem('clients', JSON.stringify(clients));
+                    alert('Cliente guardado!');
+                    document.getElementById('clientFormSection').style.display = 'none';
+                } else {
+                    alert('Por favor, complete todos os campos antes de salvar.');
+                }
+            });
+
+            nameInput.addEventListener('input', function () {
+                const name = nameInput.value;
+                if (clients[name]) {
+                    emailInput.value = clients[name].email;
+                    phoneInput.value = clients[name].phone;
+                } else {
+                    emailInput.value = '';
+                    phoneInput.value = '';
+                }
+            });
+
+            dateInput.addEventListener('change', function () {
+                const selectedDate = dateInput.value;
+                if (selectedDate) {
+                    const formattedDate = new Date(selectedDate).toLocaleDateString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                    });
+                    selectedDateDisplay.textContent = `${dateInput.value}`;
+                    atualizarHorariosDisponiveis(selectedDate);
+                    atualizarClientesAgendados(selectedDate);
+                } else {
+                    selectedDateDisplay.textContent = 'Selecione uma data';
+                }
+            });
+        });
+
+        function removerAgendamento(date, index) {
+            if (agendamentos[date]) {
+                agendamentos[date].splice(index, 1);
+                atualizarHorariosDisponiveis(date);
+                atualizarClientesAgendados(date);
+            }
+        }
+
+        function editarAgendamento(date, index) {
+            const agendamento = agendamentos[date][index];
+            document.getElementById('name').value = agendamento.name;
+            document.getElementById('email').value = agendamento.email;
+            document.getElementById('phone').value = agendamento.phone;
+            document.getElementById('service').value = agendamento.service;
+            document.getElementById('duration').value = agendamento.duration;
+            document.getElementById('date').value = date;
+            document.getElementById('time').value = agendamento.time;
+        }
+    </script>
 </body>
-<script>
-    // Cargar agendamentos desde localStorage
-    let agendamentos = JSON.parse(localStorage.getItem('agendamentos')) || {};
-
-    document.getElementById('bookingForm').addEventListener('submit', function (event) {
-        event.preventDefault();
-
-        const name = document.getElementById('name').value;
-        const email = document.getElementById('email').value;
-        const phone = document.getElementById('phone').value;
-        const service = document.getElementById('service').value;
-        const duration = parseInt(document.getElementById('duration').value, 10);
-        const date = document.getElementById('date').value;
-        const time = document.getElementById('time').value;
-
-        const [startHour, startMinute] = time.split(':').map(Number);
-        const startTimeInMinutes = startHour * 60 + startMinute;
-        const endTimeInMinutes = startTimeInMinutes + duration;
-
-        if (!agendamentos[date]) {
-            agendamentos[date] = [];
-        }
-
-        const isConflict = agendamentos[date].some(agendamento => {
-            const [bookedStartHour, bookedStartMinute] = agendamento.time.split(':').map(Number);
-            const bookedStartTimeInMinutes = bookedStartHour * 60 + bookedStartMinute;
-            const bookedEndTimeInMinutes = bookedStartTimeInMinutes + parseInt(agendamento.duration, 10);
-
-            return (startTimeInMinutes < bookedEndTimeInMinutes && endTimeInMinutes > bookedStartTimeInMinutes);
-        });
-
-        if (isConflict) {
-            document.getElementById('errorMessage').textContent = 'Horário já está agendado. Escolha outro horário.';
-            return;
-        }
-
-        agendamentos[date].push({ name, email, phone, service, time, duration });
-        localStorage.setItem('agendamentos', JSON.stringify(agendamentos));
-
-        document.getElementById('errorMessage').textContent = '';
-
-        atualizarHorariosDisponiveis(date);
-        atualizarClientesAgendados(date);
-    });
-
-    document.getElementById('date').addEventListener('change', updateDateDisplay);
-    document.getElementById('prevDay').addEventListener('click', function () {
-        changeDateBy(-1);
-    });
-    document.getElementById('nextDay').addEventListener('click', function () {
-        changeDateBy(1);
-    });
-
-    function updateDateDisplay() {
-        const dateInput = document.getElementById('date');
-        const date = new Date(dateInput.value);
-        const day = date.getDate();
-        const monthNames = [
-            'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-            'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
-        ];
-        const monthName = monthNames[date.getMonth()];
-
-        const formattedDate = `${day} de ${monthName}`;
-        document.getElementById('selectedDateDisplay').textContent = formattedDate;
-        atualizarHorariosDisponiveis(dateInput.value);
-        atualizarClientesAgendados(dateInput.value);
-    }
-
-    function changeDateBy(days) {
-        const dateInput = document.getElementById('date');
-        const date = new Date(dateInput.value);
-        date.setDate(date.getDate() + days);
-        dateInput.value = date.toISOString().split('T')[0];
-        updateDateDisplay();
-    }
-
-    function atualizarHorariosDisponiveis(date) {
-        const listaHorarios = document.getElementById('listaHorarios');
-        listaHorarios.innerHTML = '';
-
-        const horariosDoDia = agendamentos[date]?.map(agendamento => ({
-            start: agendamento.time,
-            end: addMinutes(agendamento.time, agendamento.duration),
-            name: agendamento.name
-        })) || [];
-
-        const todosHorarios = [
-            { start: '08:00', end: '09:00' },
-            { start: '09:00', end: '10:00' },
-            { start: '10:00', end: '11:00' },
-            { start: '11:00', end: '12:00' },
-            { start: '13:00', end: '14:00' },
-            { start: '14:00', end: '15:00' },
-            { start: '15:00', end: '16:00' },
-            { start: '16:00', end: '17:00' },
-            { start: '17:00', end: '18:00' },
-            { start: '18:00', end: '19:00' },
-            { start: '19:00', end: '20:00' }
-        ];
-
-        todosHorarios.forEach(horario => {
-            const agendado = horariosDoDia.find(h => (h.start < horario.end && h.end > horario.start));
-            const listItem = document.createElement('li');
-
-            if (agendado) {
-                listItem.textContent = `Ocupado: ${agendado.start} - ${agendado.end} (Cliente: ${agendado.name})`;
-                listItem.style.color = 'red';
-            } else {
-                listItem.textContent = `Disponível: ${horario.start} - ${horario.end}`;
-                listItem.style.color = 'green';
-            }
-            listaHorarios.appendChild(listItem);
-        });
-    }
-
-    function atualizarClientesAgendados(date) {
-        const listaClientes = document.getElementById('listaClientes');
-        listaClientes.innerHTML = '';
-
-        const clientesDoDia = agendamentos[date] || [];
-        clientesDoDia.forEach(agendamento => {
-            const listItem = document.createElement('li');
-            listItem.textContent = `Nome: ${agendamento.name}, Email: ${agendamento.email}, Serviço: ${agendamento.service}, Horário: ${agendamento.time}`;
-            listaClientes.appendChild(listItem);
-        });
-    }
-
-    function addMinutes(time, minutes) {
-        const [hour, minute] = time.split(':').map(Number);
-        const newMinutes = hour * 60 + minute + parseInt(minutes, 10);
-        const newHour = Math.floor(newMinutes / 60);
-        const newMinute = newMinutes % 60;
-        return `${newHour.toString().padStart(2, '0')}:${newMinute.toString().padStart(2, '0')}`;
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const form = document.getElementById('bookingForm');
-        const saveClientButton = document.getElementById('saveClientButton');
-        const nameInput = document.getElementById('name');
-        const emailInput = document.getElementById('email');
-        const phoneInput = document.getElementById('phone');
-
-        const clients = JSON.parse(localStorage.getItem('clients')) || {};
-
-        saveClientButton.addEventListener('click', function () {
-            const name = nameInput.value;
-            const email = emailInput.value;
-            const phone = phoneInput.value;
-
-            if (name && email && phone) {
-                clients[name] = { email, phone };
-                localStorage.setItem('clients', JSON.stringify(clients));
-                alert('Cliente guardado!');
-            } else {
-                alert('Por favor, complete todos os campos antes de guardar.');
-            }
-        });
-
-        nameInput.addEventListener('input', function () {
-            const name = nameInput.value;
-            if (clients[name]) {
-                emailInput.value = clients[name].email;
-                phoneInput.value = clients[name].phone;
-            } else {
-                emailInput.value = '';
-                phoneInput.value = '';
-            }
-        });
-
-        // Inicializar visualização
-        updateDateDisplay();
-    });
-
-    async function enviarMensagemWhatsApp(phone, name, date, time, service) {
-        // Aquí debes implementar la lógica para enviar el mensaje de WhatsApp
-    }
-</script>
 
 </html>
+
+
+
